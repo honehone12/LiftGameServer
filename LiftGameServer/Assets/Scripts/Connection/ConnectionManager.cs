@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Unity.Netcode;
+using System.Linq;
 
 namespace Lift
 {
@@ -14,6 +15,11 @@ namespace Lift
         System.Guid ownGuid;
 
         readonly Dictionary<System.Guid, Session> sessionMap = new();
+        readonly Dictionary<ulong, System.Guid> idMap = new();
+
+        public int SessionCount => sessionMap.Count;
+
+        public int ActiveSessionCount => sessionMap.Count((kv) => kv.Value.isActive);
 
         void Awake()
         {
@@ -22,7 +28,10 @@ namespace Lift
 
         public void InitializeServer(BootManager.BootEventParams param)
         {
-            NetworkManager.Singleton.ConnectionApprovalCallback += OnConnectinApproval;
+            var nm = NetworkManager.Singleton;
+            nm.ConnectionApprovalCallback += OnConnectinApproval;
+            nm.OnClientConnectedCallback += OnClientConnectedServer;
+            nm.OnClientDisconnectCallback += OnClientDisconnectedServer;
         }
 
         public void InitializeClient(BootManager.BootEventParams param)
@@ -40,14 +49,36 @@ namespace Lift
                 false => new byte[] { 0 },
             };
 
-            RequestOrInformGuidServerRpc(buff);
+            RequestSessionServerRpc(buff);
         }
 
         public void OnClientDisconnectedSelf(ulong connId)
         {
             ErrorManager.Singleton.Error(NetworkManager.DisconnectReason);
+        }
 
-            BootManager.Singleton.Reboot();
+        public void OnClientConnectedServer(ulong connId)
+        {
+            Debug.Log($"new client connection id: {connId}");
+            idMap.Add(connId, System.Guid.Empty);
+            Assert.IsTrue(NetworkManager.Singleton.ConnectedClientsIds.Count == idMap.Count);
+        }
+
+        public void OnClientDisconnectedServer(ulong connId)
+        {
+            Debug.Log($"client disconnected id: {connId}");
+            var guid = idMap[connId];
+            idMap.Remove(connId);
+            Assert.IsTrue(NetworkManager.Singleton.ConnectedClientsIds.Count == idMap.Count);
+
+            if (guid == System.Guid.Empty || !sessionMap.ContainsKey(guid))
+            {
+                return;
+            }
+
+            var sess = sessionMap[guid];
+            sess.isActive = false;
+            sess.timeDisconnected = UnixTime.Now;
         }
 
         public void OnConnectinApproval(
@@ -75,21 +106,19 @@ namespace Lift
         }
 
         [ServerRpc(Delivery = RpcDelivery.Reliable, RequireOwnership = false)]
-        public void RequestOrInformGuidServerRpc(byte[] raw, ServerRpcParams param = default)
+        public void RequestSessionServerRpc(byte[] raw, ServerRpcParams param = default)
         {
             var connId = param.Receive.SenderClientId;
             if (raw.Length == 1 && raw[0] == 0)
             {
-                ownGuid = System.Guid.NewGuid();
-                hasGuid = true;
-                sessionMap.Add(ownGuid, Session.NewActiveSession(connId));
-                InformNewGuidClientRpc(ownGuid.ToByteArray());
-                Debug.Log($"starting new sesiion guid: {ownGuid}, connId: {connId}");
+                StartNewSession(connId);
                 return;
             }
 
             if (raw.Length != 16)
             {
+                NetworkManager.Singleton.DisconnectClient(connId);
+                Debug.LogWarning("disconnected clinet: invalid guid");
                 return;
             }
 
@@ -101,13 +130,26 @@ namespace Lift
                 return;
             }
 
+            RestartSession(guid, connId);
+        }
+
+        void StartNewSession(ulong connId)
+        {
+            var guid = System.Guid.NewGuid();
+            idMap[connId] = guid;
+            sessionMap.Add(guid, Session.NewActiveSession(connId));
+            InformNewGuidClientRpc(guid.ToByteArray());
+            Debug.Log($"starting new sesiion guid: {guid}, connId: {connId}");
+        }
+
+        void RestartSession(System.Guid guid, ulong newConnId)
+        {
+            idMap[newConnId] = guid;
             var sess = sessionMap[guid];
-            sess.connectionId = connId;
+            sess.connectionId = newConnId;
             sess.isActive = true;
             sess.timeReconnected = UnixTime.Now;
-            sessionMap[guid] = sess;
-            ownGuid = guid;
-            Debug.Log($"restarting session for guid: {ownGuid}, connId: {connId}");
+            Debug.Log($"restarting session for guid: {guid}, connId: {newConnId}");
         }
 
         [ClientRpc(Delivery = RpcDelivery.Reliable)]

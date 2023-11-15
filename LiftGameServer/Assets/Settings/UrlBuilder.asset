@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 682b4f7d416d2fc4cb8a1bbdde3da8e9, type: 3}
+  m_Name: UrlBuilder
+  m_EditorClassIdentifier: 
+  address: 192.168.11.56
+  port: 9990
+  routeList:
+  - /connect

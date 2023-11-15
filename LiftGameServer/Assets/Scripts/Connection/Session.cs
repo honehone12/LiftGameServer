@@ -1,6 +1,6 @@
 namespace Lift
 {
-    public struct Session
+    public class Session
     {
         public static Session NewActiveSession(ulong connectionId)
         {
