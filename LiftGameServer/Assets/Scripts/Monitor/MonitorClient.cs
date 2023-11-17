@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
-using NativeWebSocket;
+using UnityEngine.Events;
 using Unity.Netcode;
+using NativeWebSocket;
+using Lift.Command;
 
 namespace Lift
 {
@@ -16,7 +18,8 @@ namespace Lift
         ConnectionManager connectionManager;
 
         WebSocket webSocket;
-
+        System.Guid serverGuid;
+        
         void Awake()
         {
             Assert.IsNotNull(urlBuilder);
@@ -26,15 +29,27 @@ namespace Lift
             monitorSetting.OnInitialAssertion();
         }
 
-        public void OnBootClient(BootManager.BootEventParams param)
+        public void InitializeClient(BootManager.BootEventParams param)
         {
-            Destroy(gameObject);
+            if (param.bootSetting.BootMode == BootSetting.BootModeKind.Client)
+            {
+                Destroy(gameObject);
+            }
         }
 
-        public async void OnBootServer(BootManager.BootEventParams param)
+        public async void InitializeServer(BootManager.BootEventParams param)
         {
-            var rooIdx = 0;
-            if (!urlBuilder.BuildWebSocketUrl(rooIdx, out var url))
+            if (CommandManager.Singleton.CommandLineArgs.OptionValue("-u", out var idStr))
+            {
+                if (!System.Guid.TryParse(idStr, out var serverGuid))
+                {
+                    ErrorManager.Singleton.Error("failed to parse guid");
+                }
+                Debug.Log($"server guid is set as {serverGuid}");
+            }
+
+            var connRouteIdx = 0;
+            if (!urlBuilder.BuildWebSocketUrl(connRouteIdx, out var url))
             {
                 ErrorManager.Singleton.Error("invalid route index");
                 return;
@@ -45,15 +60,38 @@ namespace Lift
             webSocket.OnClose += (code) => Debug.Log($"websocket closed with code: {code}");
             webSocket.OnError += (err) => ErrorManager.Singleton.Error(err);
             webSocket.OnMessage += (raw) => OnWebSocketMessage(raw);
-            await webSocket.Connect();
 
-            _ = StartCoroutine(WebSocketUpdateLoop());
-            _ = StartCoroutine(MonitoringLoop());
+            if (monitorSetting.DisableWebSocket)
+            {
+                _ = StartCoroutine(MonitoringLoop(() =>
+                {
+                    Debug.Log(
+                        $"connection count: {NetworkManager.Singleton.ConnectedClientsIds.Count}, " +
+                        $"session count: {connectionManager.SessionCount}, " +
+                        $"active session count: {connectionManager.ActiveSessionCount}"
+                    );
+                }));
+            }
+            else
+            {
+                await webSocket.Connect();
+                _ = StartCoroutine(WebSocketUpdateLoop());
+                _ = StartCoroutine(MonitoringLoop(async () =>
+                {
+                    var msg = new MonitoringMessage(
+                        serverGuid.ToByteArray(),
+                        NetworkManager.Singleton.ConnectedClientsIds.Count,
+                        connectionManager.SessionCount,
+                        connectionManager.ActiveSessionCount
+                    );
+                    await webSocket.SendText(JsonUtility.ToJson(msg));
+                }));
+            }
         }
 
         void OnWebSocketMessage(byte[] raw)
         {
-
+            throw new System.NotImplementedException();
         }
 
         IEnumerator WebSocketUpdateLoop()
@@ -67,14 +105,14 @@ namespace Lift
             }
         }
 
-        IEnumerator MonitoringLoop()
+        IEnumerator MonitoringLoop(UnityAction action)
         {
             var ticker = new WaitForSecondsRealtime(monitorSetting.MonitorInterval);
             while (true)
             {
                 yield return ticker;
 
-                
+                action?.Invoke();
             }
         }
 

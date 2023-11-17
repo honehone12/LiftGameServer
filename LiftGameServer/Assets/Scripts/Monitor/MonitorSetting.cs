@@ -7,9 +7,13 @@ namespace Lift
     public class MonitorSetting : ScriptableObject
     {
         [SerializeField]
+        bool disableWebSocket;
+        [SerializeField]
         float websocketUpdateInterval;
         [SerializeField]
         float monitorInterval;
+
+        public bool DisableWebSocket => disableWebSocket;
 
         public float WSUpdateInterval => websocketUpdateInterval;
 
@@ -19,6 +23,10 @@ namespace Lift
         {
             Assert.IsFalse(websocketUpdateInterval < 0.0f);
             Assert.IsFalse(monitorInterval < 0.0f);
+            if (disableWebSocket)
+            {
+                Debug.LogWarning("websocket is disabled");
+            }
         }
     }
 }

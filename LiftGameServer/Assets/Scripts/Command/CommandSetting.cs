@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 namespace Lift.Command
@@ -8,12 +10,17 @@ namespace Lift.Command
         public enum BuildModeKind
         {
             Release,
-            Debug
+            Debug,
+            Developement
         }
 
         [SerializeField]
         BuildModeKind buildMode;
+        [SerializeField]
+        List<string> requiredOptionList = new();
 
         public BuildModeKind BuildMode => buildMode;
+
+        public ReadOnlyCollection<string> RequiredOptions => requiredOptionList.AsReadOnly();
     }
 }

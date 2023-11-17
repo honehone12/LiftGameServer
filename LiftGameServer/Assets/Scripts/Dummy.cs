@@ -17,7 +17,7 @@ namespace Lift.Dummy
         [ServerRpc(Delivery = RpcDelivery.Reliable, RequireOwnership = true)]
         public void HelloServerRpc(ServerRpcParams param = default)
         {
-            Debug.Log($"hello, i am '{param.Receive.SenderClientId}'");
+            Debug.Log($"hello this is client id: {param.Receive.SenderClientId}");
         }
     }
 }

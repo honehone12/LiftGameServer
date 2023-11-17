@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bd476809baf2e048bbd7b133ebb5bf6, type: 3}
   m_Name: MonitorSetting
   m_EditorClassIdentifier: 
+  disableWebSocket: 1
   websocketUpdateInterval: 0.1
   monitorInterval: 1

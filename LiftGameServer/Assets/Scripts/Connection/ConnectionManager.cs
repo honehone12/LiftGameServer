@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using Unity.Netcode;
 using System.Linq;
+using UnityEngine.Events;
 
 namespace Lift
 {
@@ -10,6 +11,8 @@ namespace Lift
     {
         [SerializeField]
         ConnectionSetting connectionSetting;
+        [Space]
+        public UnityEvent OnDisconnectedClientEvent = new();
 
         bool hasGuid;
         System.Guid ownGuid;
@@ -54,11 +57,16 @@ namespace Lift
 
         public void OnClientDisconnectedSelf(ulong connId)
         {
-            ErrorManager.Singleton.Error(NetworkManager.DisconnectReason);
+            ErrorManager.Singleton.Error("disconnected with reason: " + NetworkManager.DisconnectReason);
+            OnDisconnectedClientEvent.Invoke();
         }
 
         public void OnClientConnectedServer(ulong connId)
         {
+            // clientId is just a index starts from '1'
+            // they are unique for this game server instance
+            // including disapproved clients
+            // if connection is like OOXXO the last id is 5 not 3
             Debug.Log($"new client connection id: {connId}");
             idMap.Add(connId, System.Guid.Empty);
             Assert.IsTrue(NetworkManager.Singleton.ConnectedClientsIds.Count == idMap.Count);
@@ -66,10 +74,9 @@ namespace Lift
 
         public void OnClientDisconnectedServer(ulong connId)
         {
-            Debug.Log($"client disconnected id: {connId}");
+            Debug.LogWarning($"client disconnected id: {connId}");
             var guid = idMap[connId];
             idMap.Remove(connId);
-            Assert.IsTrue(NetworkManager.Singleton.ConnectedClientsIds.Count == idMap.Count);
 
             if (guid == System.Guid.Empty || !sessionMap.ContainsKey(guid))
             {
@@ -85,13 +92,8 @@ namespace Lift
             NetworkManager.ConnectionApprovalRequest req,
             NetworkManager.ConnectionApprovalResponse res)
         {
-            // clientId is just a index starts from '1'
-            // they are unique for this game server instance
-            // including disapproved clients
-            // if connection is like OOXXO the last id is 5 not 3
             var connected = NetworkManager.Singleton.ConnectedClientsIds;
             var len = connected.Count;
-            Debug.Log($"current connected clients: '{len}'");
             if (len+1 > connectionSetting.MaxConnection)
             {
                 var reason = "exceed max connections";

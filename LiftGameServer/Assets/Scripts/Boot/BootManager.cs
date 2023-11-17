@@ -29,6 +29,8 @@ namespace Lift
         public UnityEvent<BootEventParams> OnClientBoot = new();
         public UnityEvent<BootEventParams> OnServerBoot = new();
 
+        public BootSetting Setting => bootSetting;
+
         void Awake()
         {
             Assert.IsNotNull(bootSetting);

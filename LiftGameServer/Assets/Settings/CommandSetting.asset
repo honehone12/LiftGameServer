@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 053f4568252386e448a7b6b12a00ea9f, type: 3}
   m_Name: CommandSetting
   m_EditorClassIdentifier: 
-  buildMode: 1
+  buildMode: 2
+  requiredOptionList:
+  - -a
+  - -p
+  - -u

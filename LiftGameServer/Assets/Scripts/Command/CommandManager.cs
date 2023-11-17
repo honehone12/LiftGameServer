@@ -30,14 +30,23 @@ namespace Lift.Command
 
             commandList.CollectCommandLineArgs();
 
-            if (commandSetting.BuildMode == CommandSetting.BuildModeKind.Debug)
+            var required = commandSetting.RequiredOptions;
+            for (int i = 0, length = required.Count; i < length; i++)
             {
-                var list = commandList.List;
-                
-                for (int i = 0, length = list.Count; i < length; i++)
+                var op = required[i];
+                var err = $"command line option {op} does not found";
+                if (!commandList.ContainsOption(op))
                 {
-                    var cmd = list[i];
-                    Debug.Log($"command line arg {cmd.Option} {cmd.Value}");
+                    switch (commandSetting.BuildMode)
+                    {
+                        case CommandSetting.BuildModeKind.Debug:
+                            throw new System.Exception(err);
+                        case CommandSetting.BuildModeKind.Developement:
+                            Debug.LogWarning(err);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
