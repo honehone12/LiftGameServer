@@ -1125,13 +1125,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
         type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
       propertyPath: OnDisconnectedClientEvent.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
         type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 483181655}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
       propertyPath: OnDisconnectedClientEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnDisconnect
       objectReference: {fileID: 0}
     - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
         type: 3}
@@ -1150,8 +1175,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
         type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Lift.Dummy.Reconnector, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
       propertyPath: OnDisconnectedClientEvent.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: Lift.Dummy.Reconnector, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
+        type: 3}
+      propertyPath: OnDisconnectedClient.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8770928731692992960, guid: b610035f2e6ff104d8c7036b481b6524,
         type: 3}

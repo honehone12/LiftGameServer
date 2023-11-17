@@ -12,7 +12,7 @@ namespace Lift
         [SerializeField]
         ConnectionSetting connectionSetting;
         [Space]
-        public UnityEvent OnDisconnectedClientEvent = new();
+        public UnityEvent OnDisconnectedClient = new();
 
         bool hasGuid;
         System.Guid ownGuid;
@@ -58,7 +58,7 @@ namespace Lift
         public void OnClientDisconnectedSelf(ulong connId)
         {
             ErrorManager.Singleton.Error("disconnected with reason: " + NetworkManager.DisconnectReason);
-            OnDisconnectedClientEvent.Invoke();
+            OnDisconnectedClient.Invoke();
         }
 
         public void OnClientConnectedServer(ulong connId)
